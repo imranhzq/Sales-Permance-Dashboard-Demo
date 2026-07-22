@@ -591,7 +591,7 @@ function renderCharts(metrics) {
       labels: labels.length ? labels : ['No Data'],
       datasets: [
         {
-          label: 'Revenue ($)',
+          label: 'Revenue (RM)',
           data: revenueData.length ? revenueData : [0],
           borderColor: '#6366f1',
           backgroundColor: 'rgba(99, 102, 241, 0.15)',
@@ -599,7 +599,7 @@ function renderCharts(metrics) {
           tension: 0.35
         },
         {
-          label: 'COGS Cost ($)',
+          label: 'COGS Cost (RM)',
           data: cogsData.length ? cogsData : [0],
           borderColor: '#f59e0b',
           backgroundColor: 'transparent',
@@ -607,7 +607,7 @@ function renderCharts(metrics) {
           tension: 0.35
         },
         {
-          label: 'Net Profit ($)',
+          label: 'Net Profit (RM)',
           data: profitData.length ? profitData : [0],
           borderColor: '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.15)',
@@ -671,7 +671,7 @@ function renderCharts(metrics) {
     data: {
       labels: sortedByProfit.map(i => i.name.length > 18 ? i.name.substr(0, 18) + '...' : i.name),
       datasets: [{
-        label: 'Net Profit ($)',
+        label: 'Net Profit (RM)',
         data: sortedByProfit.map(i => i.netProfit),
         backgroundColor: '#10b981',
         borderRadius: 6
@@ -759,7 +759,7 @@ function populateSaleProductSelect() {
   state.inventory.forEach(item => {
     const opt = document.createElement('option');
     opt.value = item.id;
-    opt.textContent = `${item.name} (${item.sku}) - Stock: ${item.stockQty} | Price: $${item.unitPrice.toFixed(2)}`;
+    opt.textContent = `${item.name} (${item.sku}) - Stock: ${item.stockQty} | Price: RM ${item.unitPrice.toFixed(2)}`;
     if (item.id === currentVal) opt.selected = true;
     select.appendChild(opt);
   });
@@ -791,10 +791,10 @@ function updateSalePreview() {
     document.getElementById('previewProfit').textContent = `${formatCurrency(profit)} (${margin.toFixed(1)}%)`;
   } else {
     document.getElementById('availableStockHint').textContent = 'Available: 0 units';
-    document.getElementById('itemCostHint').textContent = 'Unit Cost: $0.00';
-    document.getElementById('previewRevenue').textContent = '$0.00';
-    document.getElementById('previewCost').textContent = '$0.00';
-    document.getElementById('previewProfit').textContent = '$0.00 (0%)';
+    document.getElementById('itemCostHint').textContent = 'Unit Cost: RM 0.00';
+    document.getElementById('previewRevenue').textContent = 'RM 0.00';
+    document.getElementById('previewCost').textContent = 'RM 0.00';
+    document.getElementById('previewProfit').textContent = 'RM 0.00 (0%)';
   }
 }
 
@@ -1144,10 +1144,7 @@ function switchTab(tabName) {
 
 // Helper Utilities
 function formatCurrency(amount) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount);
+  return 'RM ' + (Number(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function escapeHtml(str) {
