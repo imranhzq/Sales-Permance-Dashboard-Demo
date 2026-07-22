@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Performance Dashboard</title>
+  
+  <!-- Google Fonts: Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <i data-lucide="trending-up"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Sales Dashboard</h1>
+          <span>Performance Hub</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard Overview</span>
+        </button>
+        <button class="nav-item" data-tab="inventory">
+          <i data-lucide="boxes"></i>
+          <span>Inventory & Item Sales</span>
+        </button>
+        <button class="nav-item" data-tab="transactions">
+          <i data-lucide="receipt"></i>
+          <span>Sales Ledger</span>
+        </button>
+        <button class="nav-item" data-tab="analytics">
+          <i data-lucide="pie-chart"></i>
+          <span>Profit & Analytics</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-widgets">
+        <div class="stock-alert-widget" id="stockAlertWidget">
+          <div class="widget-header">
+            <i data-lucide="alert-triangle"></i>
+            <span>Low Stock Alert</span>
+          </div>
+          <p id="lowStockCountText">Checking inventory...</p>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="resetDataBtn" class="btn btn-outline btn-sm btn-block">
+          <i data-lucide="rotate-ccw"></i> Reset Demo Data
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header Bar -->
+      <header class="top-header">
+        <div class="header-title">
+          <h2 id="pageTitle">Sales Performance Dashboard</h2>
+          <p class="subtitle">Monitor inventory levels, prices, costs, revenue, and gross profit metrics in real time</p>
+        </div>
+
+        <div class="header-actions">
+          <div class="filter-group">
+            <i data-lucide="filter"></i>
+            <select id="productFilterSelect" class="form-control form-control-sm">
+              <option value="all">All Products View</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <i data-lucide="calendar"></i>
+            <select id="timeRangeFilter" class="form-control form-control-sm">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="7days">Last 7 Days</option>
+              <option value="30days" selected>Last 30 Days</option>
+              <option value="year">Year to Date</option>
+            </select>
+          </div>
+
+          <button id="openRecordSaleBtn" class="btn btn-primary">
+            <i data-lucide="plus-circle"></i> Record New Sale
+          </button>
+          <button id="openAddStockBtn" class="btn btn-secondary">
+            <i data-lucide="package-plus"></i> Add Stock Item
+          </button>
+        </div>
+      </header>
+
+      <!-- KPI Summary Cards Section -->
+      <section class="kpi-grid">
+        <div class="kpi-card glass-card revenue">
+          <div class="kpi-icon">
+            <i data-lucide="dollar-sign"></i>
+          </div>
+          <div class="kpi-details">
+            <span class="kpi-label">Total Revenue</span>
+            <h3 class="kpi-value" id="kpiRevenue">$0.00</h3>
+            <span class="kpi-subtext badge-success" id="kpiRevenueSubtext"><i data-lucide="arrow-up-right"></i> Total Goods Sold Value</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-card cogs">
+          <div class="kpi-icon">
+            <i data-lucide="shopping-bag"></i>
+          </div>
+          <div class="kpi-details">
+            <span class="kpi-label">Total Cost (COGS)</span>
+            <h3 class="kpi-value" id="kpiCOGS">$0.00</h3>
+            <span class="kpi-subtext" id="kpiCOGSSubtext">Cost of Items Sold</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-card profit">
+          <div class="kpi-icon">
+            <i data-lucide="coins"></i>
+          </div>
+          <div class="kpi-details">
+            <span class="kpi-label">Net Gross Profit</span>
+            <h3 class="kpi-value" id="kpiProfit">$0.00</h3>
+            <span class="kpi-subtext badge-accent" id="kpiProfitMargin">Margin: 0%</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-card inventory-val">
+          <div class="kpi-icon">
+            <i data-lucide="warehouse"></i>
+          </div>
+          <div class="kpi-details">
+            <span class="kpi-label">Inventory Cost Value</span>
+            <h3 class="kpi-value" id="kpiStockValuation">$0.00</h3>
+            <span class="kpi-subtext" id="kpiRetailValuation">Retail Value: $0.00</span>
+          </div>
+        </div>
+
+        <div class="kpi-card glass-card units-sold">
+          <div class="kpi-icon">
+            <i data-lucide="package-check"></i>
+          </div>
+          <div class="kpi-details">
+            <span class="kpi-label">Units Sold</span>
+            <h3 class="kpi-value" id="kpiUnitsSold">0</h3>
+            <span class="kpi-subtext" id="kpiUnitsRemaining">In Stock: 0 units</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 1: OVERVIEW -->
+      <div class="tab-content active" id="tab-overview">
+        <div class="charts-row">
+          <div class="chart-card glass-card chart-large">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="line-chart"></i>
+                <h3>Revenue, Cost & Profit Dynamics</h3>
+              </div>
+              <span class="badge">Financial Timeline</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="overviewFinancialChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card glass-card chart-small">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="pie-chart"></i>
+                <h3>Sales by Category</h3>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="categoryPieChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="tables-row">
+          <!-- Top Performing Products Preview -->
+          <div class="table-card glass-card flex-2">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="trophy"></i>
+                <h3>Top Profit Generator Items</h3>
+              </div>
+              <button class="btn-text" onclick="switchTab('inventory')">View All Stock Items &rarr;</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Units Sold</th>
+                    <th>Unit Price</th>
+                    <th>Revenue</th>
+                    <th>Total Cost</th>
+                    <th>Profit</th>
+                    <th>Margin</th>
+                  </tr>
+                </thead>
+                <tbody id="topProductsTableBody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Stock Level Warnings Widget -->
+          <div class="table-card glass-card flex-1">
+            <div class="card-header">
+              <div class="card-title text-warning">
+                <i data-lucide="alert-circle"></i>
+                <h3>Low & Out of Stock Alerts</h3>
+              </div>
+            </div>
+            <div class="warning-items-list" id="lowStockList">
+              <!-- Dynamic alert cards -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: INVENTORY & PER-ITEM PERFORMANCE -->
+      <div class="tab-content" id="tab-inventory">
+        <div class="table-card glass-card">
+          <div class="card-header border-bottom">
+            <div class="card-title">
+              <i data-lucide="boxes"></i>
+              <h3>Per-Item Inventory & Profitability Master Matrix</h3>
+            </div>
+
+            <div class="table-toolbar">
+              <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="inventorySearch" class="form-control" placeholder="Search product, SKU...">
+              </div>
+
+              <select id="categoryFilter" class="form-control">
+                <option value="all">All Categories</option>
+              </select>
+
+              <select id="stockStatusFilter" class="form-control">
+                <option value="all">All Stock Status</option>
+                <option value="in_stock">In Stock</option>
+                <option value="low_stock">Low Stock (≤ 10)</option>
+                <option value="out_of_stock">Out of Stock (0)</option>
+              </select>
+
+              <button class="btn btn-outline" id="exportInventoryCsvBtn">
+                <i data-lucide="download"></i> Export CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table" id="inventoryTable">
+              <thead>
+                <tr>
+                  <th>Product & SKU</th>
+                  <th>Category</th>
+                  <th>Unit Cost</th>
+                  <th>Selling Price</th>
+                  <th>Stock In Hand</th>
+                  <th>Units Sold</th>
+                  <th>Total Revenue</th>
+                  <th>Total COGS</th>
+                  <th>Net Profit</th>
+                  <th>Profit Margin</th>
+                  <th>Stock Health</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: SALES TRANSACTION LEDGER -->
+      <div class="tab-content" id="tab-transactions">
+        <div class="table-card glass-card">
+          <div class="card-header border-bottom">
+            <div class="card-title">
+              <i data-lucide="receipt"></i>
+              <h3>Sales Transaction History Ledger</h3>
+            </div>
+
+            <div class="table-toolbar">
+              <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="text" id="transactionSearch" class="form-control" placeholder="Search ID, item name...">
+              </div>
+
+              <select id="paymentFilter" class="form-control">
+                <option value="all">All Payment Channels</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Cash">Cash</option>
+                <option value="Online Banking">Online Banking</option>
+                <option value="E-Wallet">E-Wallet</option>
+              </select>
+
+              <button class="btn btn-outline" id="exportSalesCsvBtn">
+                <i data-lucide="download"></i> Export Sales CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tx ID</th>
+                  <th>Date & Time</th>
+                  <th>Product Sold</th>
+                  <th>Qty</th>
+                  <th>Unit Cost</th>
+                  <th>Sale Price</th>
+                  <th>Total Revenue</th>
+                  <th>Total COGS</th>
+                  <th>Net Profit</th>
+                  <th>Payment</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="transactionsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: PROFIT & ANALYTICS REPORTS -->
+      <div class="tab-content" id="tab-analytics">
+        <div class="charts-grid">
+          <div class="chart-card glass-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="bar-chart-3"></i>
+                <h3>Top 5 Products by Gross Profit</h3>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="topProfitBarChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card glass-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="pie-chart"></i>
+                <h3>Revenue by Payment Method</h3>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="paymentChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card glass-card chart-full">
+            <div class="card-header">
+              <div class="card-title">
+                <i data-lucide="layers"></i>
+                <h3>Stock Volume vs Total Revenue Comparison</h3>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="stockVsSalesChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL 1: RECORD NEW SALE -->
+  <div class="modal-backdrop" id="recordSaleModal">
+    <div class="modal-dialog glass-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="shopping-cart"></i>
+          <h3>Record New Sales Transaction</h3>
+        </div>
+        <button class="modal-close" data-close="recordSaleModal">&times;</button>
+      </div>
+      <form id="recordSaleForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="saleProductSelect">Select Item from Inventory *</label>
+            <select id="saleProductSelect" class="form-control" required>
+              <option value="">-- Choose Product --</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="saleQuantity">Quantity Sold *</label>
+              <input type="number" id="saleQuantity" class="form-control" min="1" value="1" required>
+              <span class="field-hint" id="availableStockHint">Available: 0 units</span>
+            </div>
+
+            <div class="form-group">
+              <label for="saleUnitPrice">Unit Selling Price ($) *</label>
+              <input type="number" id="saleUnitPrice" class="form-control" step="0.01" min="0" required>
+              <span class="field-hint" id="itemCostHint">Unit Cost: $0.00</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="salePaymentMethod">Payment Method</label>
+              <select id="salePaymentMethod" class="form-control">
+                <option value="Credit Card">Credit Card</option>
+                <option value="Cash">Cash</option>
+                <option value="Online Banking">Online Banking</option>
+                <option value="E-Wallet">E-Wallet</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="saleDate">Transaction Date</label>
+              <input type="datetime-local" id="saleDate" class="form-control">
+            </div>
+          </div>
+
+          <div class="sale-summary-preview">
+            <div class="summary-item">
+              <span>Total Revenue:</span>
+              <strong id="previewRevenue">$0.00</strong>
+            </div>
+            <div class="summary-item">
+              <span>Estimated Cost:</span>
+              <strong id="previewCost">$0.00</strong>
+            </div>
+            <div class="summary-item highlight">
+              <span>Estimated Net Profit:</span>
+              <strong id="previewProfit">$0.00 (0%)</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="recordSaleModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="check"></i> Confirm & Record Sale
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: ADD / EDIT STOCK ITEM -->
+  <div class="modal-backdrop" id="stockItemModal">
+    <div class="modal-dialog glass-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="package"></i>
+          <h3 id="stockModalTitle">Add New Inventory Stock</h3>
+        </div>
+        <button class="modal-close" data-close="stockItemModal">&times;</button>
+      </div>
+      <form id="stockItemForm">
+        <input type="hidden" id="stockItemId">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="stockName">Product Name *</label>
+              <input type="text" id="stockName" class="form-control" placeholder="e.g. Wireless Ergonomic Mouse" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="stockSku">SKU Code *</label>
+              <input type="text" id="stockSku" class="form-control" placeholder="e.g. ELE-109" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="stockCategory">Category *</label>
+              <input type="text" id="stockCategory" class="form-control" placeholder="e.g. Electronics" list="categoryOptions" required>
+              <datalist id="categoryOptions">
+                <option value="Electronics">
+                <option value="Fashion & Apparel">
+                <option value="Home & Living">
+                <option value="Office & Gadgets">
+                <option value="Personal Care">
+              </datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="stockQty">Stock Quantity In Hand *</label>
+              <input type="number" id="stockQty" class="form-control" min="0" value="20" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="stockUnitCost">Unit Cost Price ($) *</label>
+              <input type="number" id="stockUnitCost" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+
+            <div class="form-group">
+              <label for="stockUnitPrice">Unit Selling Price ($) *</label>
+              <input type="number" id="stockUnitPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="stockLowThreshold">Low Stock Alert Threshold</label>
+              <input type="number" id="stockLowThreshold" class="form-control" min="1" value="10">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close="stockItemModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="save"></i> Save Product Item
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: PER-ITEM DETAILED DRILLDOWN DRAWER -->
+  <div class="modal-backdrop" id="itemDetailModal">
+    <div class="modal-dialog glass-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i data-lucide="info"></i>
+          <h3 id="detailItemName">Item Details & Performance Breakdown</h3>
+        </div>
+        <button class="modal-close" data-close="itemDetailModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="item-summary-grid">
+          <div class="item-stat-box">
+            <span>SKU</span>
+            <strong id="detailItemSku">-</strong>
+          </div>
+          <div class="item-stat-box">
+            <span>Category</span>
+            <strong id="detailItemCategory">-</strong>
+          </div>
+          <div class="item-stat-box">
+            <span>Stock Remaining</span>
+            <strong id="detailItemStock">-</strong>
+          </div>
+          <div class="item-stat-box">
+            <span>Units Sold</span>
+            <strong id="detailItemSold">-</strong>
+          </div>
+          <div class="item-stat-box">
+            <span>Unit Cost / Price</span>
+            <strong id="detailItemPrices">-</strong>
+          </div>
+          <div class="item-stat-box highlight">
+            <span>Total Net Profit</span>
+            <strong id="detailItemProfit">-</strong>
+          </div>
+        </div>
+
+        <h4 class="mt-4 mb-2"><i data-lucide="history"></i> Item Sales History Ledger</h4>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Qty Sold</th>
+                <th>Unit Price</th>
+                <th>Revenue</th>
+                <th>Cost</th>
+                <th>Net Profit</th>
+                <th>Payment</th>
+              </tr>
+            </thead>
+            <tbody id="itemSalesHistoryBody">
+              <!-- Item specific transactions -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
