@@ -1,3 +1,5 @@
+Short story: my friend once asked me to build an sales performance and inventory tracker for the business they are running, but in Excel. It was quite limited in what I could do in Excel, so I decided to take some time and figure out how to do a live interactive dashboard instead. With the help of Google Antigravity, I was able to create this demo dashboard that fulfills the needs of my friend. Antigravity is a powerful tool to edit generate ideas for coding in general. 
+
 # Sales-Permance-Dashboard-Demo
 An interactive Sales Performance &amp; Inventory Analytics Dashboard built with HTML5, CSS3, JS &amp; Chart.js. Track stock levels, revenue, costs, itemized net profits, and margins in real time.
 
